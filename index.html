@@ -311,11 +311,11 @@ const DATA = {
       { flag:"🇯🇵", title:"日本の空港で出国", sub:"日本人として出国",
         prep:["パスポート"],
         steps:[
-          ["チェックイン","出国税3,000円は航空券代に含まれています。"],
+          ["チェックイン",""],
           ["保安検査",""],
           ["出国審査","顔認証ゲートでパスポートをかざして通過します（事前登録不要）。"]
         ]},
-      { flag:"🇰🇷", title:"韓国の空港で入国", sub:"外国人として入国（90日以内はビザ不要）",
+      { flag:"🇰🇷", title:"韓国の空港で入国", sub:"",
         prep:["パスポート","電子入国申告書（e-Arrival Card）：到着日を含む3日前から提出可、無料"],
         links:[["電子入国申告書（e-Arrival Card）","https://www.e-arrivalcard.go.kr/portal/main/index.do?locale=JP"]],
         steps:[
@@ -348,18 +348,17 @@ const DATA = {
       { flag:"🇯🇵", title:"日本の空港で出国", sub:"特別永住者として、みなし再入国許可で出国",
         figure:"departure",
         prep:["パスポート","特別永住者証明書（有効期限を確認）","出入国カード（再入国出国記録）：出国審査場の手前に置いてあります"],
-        warn:"みなし再入国許可で出国した場合、出国後2年以内に再入国しないと特別永住者の地位を失います。2年を超えそうなときは、事前に入管で再入国許可を受けてください。",
         steps:[
-          ["チェックイン","出国税3,000円は航空券代に含まれています。"],
+          ["チェックイン",""],
           ["保安検査",""],
           ["出入国カードを記入","右側の「出国記録①（DEPARTURE）」に記入します。「1. 一時的な出国であり、再入国する予定です」に必ずチェックしてください。チェックを忘れると特別永住者の地位を失うおそれがあります。左側の「再入国記録②（ARRIVAL）」は日本に戻るときに使います。下の記入例を参照。"],
-          ["出国審査","審査ブースで、パスポート・出入国カード・特別永住者証明書を提示します。事前に利用登録をしていれば、一部空港では自動化ゲートも使えます。"]
+          ["出国審査","審査ブースで、パスポート・出入国カード・特別永住者証明書を提示します。"]
         ]},
       { flag:"🇰🇷", title:"韓国の空港で入国", sub:"韓国人（在外国民）として入国",
         prep:["パスポート"],
         photo:"lane",
         steps:[
-          ["入国審査","「대한민국여권 / KOREAN PASSPORT（재외동포 포함 / OVERSEAS KOREAN）」の看板がある有人レーンに並びます。特別永住者は自動ゲートを利用できないことが多いため、最初から有人レーンに進むとスムーズです。黄色い看板の「자동심사대 이용자 전용심사대」は自動ゲート利用者用なので並ばないでください。"],
+          ["入国審査","「대한민국여권 / KOREAN PASSPORT（재외동포 포함 / OVERSEAS KOREAN）」の看板がある有人レーンに並びます。特別永住者は自動ゲートを利用できないことが多いため、最初から有人レーンに進むとスムーズです。もし自動ゲートのレーンに並んで失敗しても、係員が有人レーンに案内してくれます。"],
           ["荷物を受け取る",""],
           ["税関","申告するものがなければ申告書なしで通過できます。"]
         ]}
@@ -396,7 +395,7 @@ const LANE_IMG = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQ
 function laneHTML(){
   return `<figure class="fig"><figcaption><b>並ぶレーンの目印</b></figcaption>
     <div class="figscroll photo"><img class="zoom" src="${LANE_IMG}" alt="韓国の空港の入国審査場。青い看板「대한민국여권 KOREAN PASSPORT 재외동포 포함 OVERSEAS KOREAN」の有人レーンと、黄色い看板の自動ゲート利用者専用レーン" width="800" height="552"></div>
-    <ul><li>青い看板「대한민국여권 / KOREAN PASSPORT」（재외동포 포함 / OVERSEAS KOREAN）の有人レーンへ</li><li>黄色い看板の「자동심사대 이용자 전용심사대」は自動ゲート利用者専用</li></ul></figure>`;
+    <ul><li>青い看板「대한민국여권 / KOREAN PASSPORT」（재외동포 포함 / OVERSEAS KOREAN）の有人レーンへ</li></ul></figure>`;
 }
 function figHTML(kind){
   return `<figure class="fig"><figcaption><b>出入国カードの記入例</b></figcaption>
@@ -417,7 +416,7 @@ function render(){
   document.getElementById("content").innerHTML = flows.map((f,i) => `
     <section class="flow">
       <h2><span class="flag" aria-hidden="true">${f.flag}</span>${esc(f.title)}</h2>
-      <p class="sub">${esc(f.sub)}</p>
+      ${f.sub ? `<p class="sub">${esc(f.sub)}</p>` : ""}
       ${f.warn ? `<p class="warn">${esc(f.warn)}</p>` : ""}
       ${f.prep ? `<div class="prep"><b>準備するもの</b><ul>${f.prep.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
       ${f.links ? `<div class="links">${f.links.map(([t,u])=>`<a class="lk" href="${u}" target="_blank" rel="noopener">${esc(t)}<small>公式サイトを開く</small></a>`).join("")}</div>` : ""}
