@@ -123,6 +123,19 @@ tbody th{white-space:nowrap; color:var(--muted); font-weight:500}
 .check li:last-child{border-bottom:0}
 .check li::before{content:""; position:absolute; left:14px; top:13px; width:18px; height:18px; border:2px solid var(--accent); border-radius:4px}
 .tip{font-size:.88rem; color:var(--muted); margin-top:14px}
+.wx{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px}
+.wc{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px}
+.wc-city{font-weight:700; font-size:.95rem; display:flex; justify-content:space-between; align-items:baseline}
+.wc-city small{font-weight:400; color:var(--muted); font-size:.72rem}
+.wc-main{display:flex; align-items:center; gap:8px; margin:4px 0 2px}
+.wc-ic{font-size:1.8rem; line-height:1}
+.wc-t{font-size:1.6rem; font-weight:700}
+.wc-d{font-size:.82rem; color:var(--muted)}
+.wc-hl{font-size:.8rem; margin-top:2px}
+.wc-hl .hi{color:#C0392B}.wc-hl .lo{color:#2E6FB7}
+.wx-msg{color:var(--muted); font-size:.9rem; margin:0}
+.wx-src{font-size:.75rem; color:var(--muted); margin-top:8px}
+@media (max-width:600px){.wx{grid-template-columns:1fr 1fr}}
 .notes{font-size:.82rem; color:var(--muted); margin-top:28px; border-top:1px solid var(--line); padding-top:14px}
 .notes ul{padding-left:1.2em; margin:6px 0 0}
 @media (prefers-reduced-motion:reduce){.pp{transition:none}}
@@ -193,6 +206,10 @@ img.zoom{cursor:zoom-in}
       <span class="mi-d">韓国でネットを使うために、出発前に準備しておくことを整理しています。</span>
     </a>
   </div>
+
+  <h2 class="h2">現在の天気・気温</h2>
+  <div class="wx" id="wx"><p class="wx-msg">天気を読み込んでいます…</p></div>
+  <p class="wx-src" id="wx-src"></p>
 </section>
 
 <section id="v-wifi" class="view" hidden>
@@ -445,6 +462,43 @@ document.addEventListener("click", e => {
   if (!lb.hidden && (e.target===lb || e.target.closest(".lb-x"))){ lb.hidden=true; document.body.style.overflow=""; }
 });
 document.addEventListener("keydown", e => { if (e.key==="Escape" && !lb.hidden){ lb.hidden=true; document.body.style.overflow=""; }});
+
+const CITIES=[
+  ["ソウル","韓国",37.5665,126.978],["福岡","日本",33.5902,130.4017],["佐賀","日本",33.2494,130.2988],
+  ["熊本","日本",32.8031,130.7079],["大阪","日本",34.6937,135.5023]];
+function wxInfo(c){
+  if(c===0) return ["☀️","快晴"];
+  if(c===1) return ["🌤️","晴れ"];
+  if(c===2) return ["⛅","晴れ時々くもり"];
+  if(c===3) return ["☁️","くもり"];
+  if(c===45||c===48) return ["🌫️","霧"];
+  if(c>=51&&c<=57) return ["🌦️","霧雨"];
+  if((c>=61&&c<=67)||(c>=80&&c<=82)) return ["🌧️","雨"];
+  if((c>=71&&c<=77)||c===85||c===86) return ["❄️","雪"];
+  if(c>=95) return ["⛈️","雷雨"];
+  return ["🌡️","—"];
+}
+async function loadWeather(){
+  const box=document.getElementById("wx"), src=document.getElementById("wx-src");
+  const lat=CITIES.map(c=>c[2]).join(","), lon=CITIES.map(c=>c[3]).join(",");
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`;
+  try{
+    const r=await fetch(url); if(!r.ok) throw 0;
+    let d=await r.json(); if(!Array.isArray(d)) d=[d];
+    box.innerHTML=d.map((w,i)=>{
+      const [ic,tx]=wxInfo(w.current.weather_code);
+      return `<div class="wc"><div class="wc-city">${CITIES[i][0]}<small>${CITIES[i][1]}</small></div>
+        <div class="wc-main"><span class="wc-ic" aria-hidden="true">${ic}</span><span class="wc-t">${Math.round(w.current.temperature_2m)}℃</span></div>
+        <div class="wc-d">${tx}</div>
+        <div class="wc-hl"><span class="hi">最高 ${Math.round(w.daily.temperature_2m_max[0])}℃</span> / <span class="lo">最低 ${Math.round(w.daily.temperature_2m_min[0])}℃</span></div></div>`;
+    }).join("");
+    const t=d[0].current.time.slice(11,16);
+    src.textContent=`${t}（日本・韓国時間）時点 · データ：Open-Meteo`;
+  }catch(e){
+    box.innerHTML='<p class="wx-msg">天気を取得できませんでした。しばらくしてから再読み込みしてください。</p>';
+  }
+}
+loadWeather();
 window.addEventListener("hashchange", route);
 route();
 </script>
